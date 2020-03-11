@@ -26,6 +26,7 @@ public class RedisSubscriberConfig {
         redisMessageListenerContainer.setConnectionFactory(sessionConnectionFactory);
         MessageListenerAdapter keyModifyListener = new MessageListenerAdapter((MessageListener) (message, pattern) -> {
             String channelName = new String(message.getChannel());
+            //监听到发生变动的key
             String[] split = channelName.split("RATE_LIMITER_REGISTER:");
             String customerKey = split[1];
             System.out.println(customerKey);

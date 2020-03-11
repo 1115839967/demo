@@ -6,15 +6,13 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
 /**
- * @program: demo
- * @description:
- * @author: xutiancheng
- * @create: 2020-03-11 10:23
+ * Created by on 2020-03-11 10:23
+ * @author xutiancheng
  */
 
 @RestController
 @RequestMapping("/redis")
-public class RedisDemo {
+public class RedisDemoController {
 
     @Resource
     private RedisTemplate<String, String> redisTemplate;
