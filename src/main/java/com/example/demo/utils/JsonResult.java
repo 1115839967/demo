@@ -5,18 +5,23 @@ package com.example.demo.utils;
  * @since 2020-04-09 13:44
  */
 public class JsonResult {
-    // 状态（true, false）
+    /**
+     * 状态（true, false）
+     */
     private Boolean status = false;
-    // 错误代码
+    /**
+     * 错误代码
+     */
     private String errCode;
-    // 错误信息
+    /**
+     * 错误信息
+     */
     private String err;
-    // 结果对象
+    /**
+     * 结果对象
+     */
     private Object result;
 
-    /*
-     * 无参构造
-     */
     public JsonResult(){
 
     }
