@@ -2,8 +2,12 @@ package com.example.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import tk.mybatis.spring.annotation.MapperScan;
 
-
+/**
+ * @author xutiancheng
+ */
+@MapperScan(basePackages = {"com.example.demo.mapper"})
 @SpringBootApplication
 public class DemoApplication {
 
