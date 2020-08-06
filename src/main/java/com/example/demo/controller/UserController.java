@@ -4,6 +4,7 @@ import com.example.demo.domain.User;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.JsonResult;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -22,10 +23,21 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @PostMapping("/'save")
-    public String saveUser(@RequestBody User user) {
+    @PostMapping("/save")
+    public JsonResult saveUser(@RequestBody User user) {
+        if (StringUtils.isBlank(user.getRealName()) || StringUtils.isBlank(user.getUserName())
+                || StringUtils.isBlank(user.getPassword())) {
+            return new JsonResult(true, "params error");
+        }
 
-        return "success";
+        try {
+            userService.save(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new JsonResult(true, "添加失败");
+        }
+
+        return new JsonResult(true, "添加成功");
     }
 
     @GetMapping("/findOne")

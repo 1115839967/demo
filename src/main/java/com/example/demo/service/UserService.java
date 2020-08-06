@@ -24,4 +24,10 @@ public interface UserService {
      * @return User集合
      */
     List<User> findAll();
+
+    /**
+     * 保存用户
+     * @param user
+     */
+    void save(User user);
 }
