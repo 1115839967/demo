@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 
 /**
@@ -14,7 +15,7 @@ import javax.persistence.Table;
  */
 @Data
 @Table(name = "t_user")
-public class User {
+public class User implements Serializable {
 
     @Id
     private String id;
