@@ -2,15 +2,16 @@ package com.example.demo;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.demo.domain.User;
+import com.example.demo.utils.Remote;
 import com.example.demo.utils.encryption.RSASignature;
+import com.jcraft.jsch.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -27,6 +28,8 @@ import java.util.stream.Stream;
 public class TestDemo {
     private final String privateKey = "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmI+vEXVB0vHjqbFcm2nH+DWru7C/4v/44GP5oSX7RHD1jST7ha4SYKQgCdGhPim4TtlcC8GouSv06IglIBiAJQIDAQABAkBv/4uWVW6tXca0nPBPZ6jWHxCkCW3VR/V9RefM1gVQiDmNUMlUJHAoSHJMtzceIC6cgcxnrA8SyhqPmfkwLI1BAiEA1uGE+T6mMV9aIfLkvuoW2xtKBR83Q0jC6xIZKXuoKGcCIQC1wUeEw0ERCdeD5NDE7bP0zSQFvYBQgIl9JLu6SkArkwIgU65LjIz7R6rsfOAMeNTMxdMgxlHbwZYqYkUQC3meiO0CIFXSuFSmZjkHbq6nAzWaEJmNrG7Rdp+Msl9XUxW6LeblAiBAld/nslt0fH6ufsEYFyRNl/4Rw8O+5YgzC1ix2/C1Fw==";
     private final String publicKey = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJiPrxF1QdLx46mxXJtpx/g1q7uwv+L/+OBj+aEl+0Rw9Y0k+4WuEmCkIAnRoT4puE7ZXAvBqLkr9OiIJSAYgCUCAwEAAQ==";
+    private static final int CONNECT_TIMEOUT = 6000;
+
     public static void main(String[] args) {
         int a = 0;
         if (false) {
@@ -169,5 +172,102 @@ public class TestDemo {
         String decrypt = RSASignature.decrypt(encrypt, publicKey);
         System.out.println("decrypt：" + decrypt);
         System.out.println(RSASignature.doCheck(paramStr, signStr, publicKey));
+    }
+
+    public static Session getSession(Remote remote) throws JSchException {
+        JSch jSch = new JSch();
+        if (Files.exists(Paths.get(remote.getIdentity()))) {
+            jSch.addIdentity(remote.getIdentity(), remote.getPassphrase());
+        }
+        Session session = jSch.getSession(remote.getUser(), remote.getHost(), remote.getPort());
+        session.setPassword(remote.getPassword());
+        session.setConfig("StrictHostKeyChecking", "no");
+        return session;
+    }
+
+    @Test
+    public void readTxt2() throws JSchException, SftpException, IOException {
+        Remote remote = new Remote();
+        remote.setHost("192.168.0.36");
+        remote.setPort(22);
+        remote.setUser("ucsp");
+        remote.setPassword("ucsp.123");
+        Session session = getSession(remote);
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+        config.put("PreferredAuthentications", "password");
+        session.setConfig(config);
+        session.connect();
+        if (session.isConnected()) {
+            System.out.println("connected");
+        }
+
+        ChannelSftp channelSftp = (ChannelSftp) session.openChannel("sftp");
+        channelSftp.connect(6000);
+        String file = "/web/guest/mercinfo/merc_info_20210112.txt";
+        InputStream inputStream = channelSftp.get(file);
+        InputStreamReader isr = new InputStreamReader(inputStream, "GBK");
+        BufferedReader br = new BufferedReader(isr);
+        try {
+            LineNumberReader reader = new LineNumberReader(br);
+            String txt = null;
+            while ((txt = reader.readLine()) != null) {
+                System.out.println(txt);
+            }
+            log.info("数据筛选完毕!");
+            reader.close();
+            br.close();
+
+        } catch (FileNotFoundException e) {
+            log.info(e.getMessage());
+        }
+    }
+
+    public static List<String> remoteExecute(Session session, String command) throws JSchException {
+        log.debug(">> {}", command);
+        List<String> resultLines = new ArrayList<>();
+        ChannelExec channel = null;
+        try {
+            channel = (ChannelExec) session.openChannel("exec");
+            channel.setCommand(command);
+            InputStream input = channel.getInputStream();
+            channel.connect(CONNECT_TIMEOUT);
+            try {
+                BufferedReader inputReader = new BufferedReader(new InputStreamReader(input));
+                String inputLine = null;
+                while ((inputLine = inputReader.readLine()) != null) {
+                    log.debug("   {}", inputLine);
+                    resultLines.add(inputLine);
+                }
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (Exception e) {
+                        log.error("JSch inputStream close error:", e);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.error("IOcxecption:", e);
+        } finally {
+            if (channel != null) {
+                try {
+                    channel.disconnect();
+                } catch (Exception e) {
+                    log.error("JSch channel disconnect error:", e);
+                }
+            }
+        }
+
+        return resultLines;
+    }
+
+    // outputStream转inputStream
+    public ByteArrayInputStream parse(final OutputStream out) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos = (ByteArrayOutputStream) out;
+        final ByteArrayInputStream swapStream = new ByteArrayInputStream(baos.toByteArray());
+        return swapStream;
     }
 }
