@@ -2,12 +2,19 @@ package com.example.demo;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.demo.domain.User;
+import com.example.demo.utils.encryption.RSASignature;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +25,8 @@ import java.util.stream.Stream;
  */
 @Slf4j
 public class TestDemo {
+    private final String privateKey = "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmI+vEXVB0vHjqbFcm2nH+DWru7C/4v/44GP5oSX7RHD1jST7ha4SYKQgCdGhPim4TtlcC8GouSv06IglIBiAJQIDAQABAkBv/4uWVW6tXca0nPBPZ6jWHxCkCW3VR/V9RefM1gVQiDmNUMlUJHAoSHJMtzceIC6cgcxnrA8SyhqPmfkwLI1BAiEA1uGE+T6mMV9aIfLkvuoW2xtKBR83Q0jC6xIZKXuoKGcCIQC1wUeEw0ERCdeD5NDE7bP0zSQFvYBQgIl9JLu6SkArkwIgU65LjIz7R6rsfOAMeNTMxdMgxlHbwZYqYkUQC3meiO0CIFXSuFSmZjkHbq6nAzWaEJmNrG7Rdp+Msl9XUxW6LeblAiBAld/nslt0fH6ufsEYFyRNl/4Rw8O+5YgzC1ix2/C1Fw==";
+    private final String publicKey = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJiPrxF1QdLx46mxXJtpx/g1q7uwv+L/+OBj+aEl+0Rw9Y0k+4WuEmCkIAnRoT4puE7ZXAvBqLkr9OiIJSAYgCUCAwEAAQ==";
     public static void main(String[] args) {
         int a = 0;
         if (false) {
@@ -102,5 +111,63 @@ public class TestDemo {
         System.out.println(ip.split(",")[0]);
         System.out.println(ip.split(",")[1]);
 
+    }
+
+    @Test
+    public void readTxt() {
+        String date = LocalDate.now().plusDays(-1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        System.out.println("date：" + date);
+        String path = "/Users/xutiancheng/Desktop/mercinfo/merc_info_" + date + ".txt";
+        try {
+            File file = new File(path);
+            if (file.isFile() && file.exists()) {
+                InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+                BufferedReader br = new BufferedReader(inputStreamReader);
+                String lineTxt = null;
+                int i = 1;
+                while ((lineTxt = br.readLine()) != null) {
+                    String[] lineTxts = lineTxt.split("\\|");
+                    for (String str : lineTxts) {
+                        System.out.println(str);
+                    }
+
+                    String code = lineTxts[0];
+                    String crdmercId = lineTxts[1];
+                    String name = lineTxts[2];
+                    String shortName = lineTxts[3];
+                    String brandId = lineTxts[4];
+                    String status = lineTxts[5];
+                    String type = lineTxts[6];
+                    String cardPayAuth = lineTxts[7];
+                    System.out.println("----------------------");
+                }
+
+                br.close();
+                inputStreamReader.close();
+            } else {
+                log.info("文件不存在！");
+            }
+        } catch (Exception e) {
+            log.info("文件读取错误！");
+        }
+    }
+
+    @Test
+    public void rsa() throws Exception {
+        Map<String, String> requestMap = new HashMap<String, String>() {{
+            put("codes", "99449,57077");
+            put("status", "DISABLED");
+        }};
+
+        String paramStr = RSASignature.convertMap2String(requestMap);
+        String signStr = RSASignature.sign(paramStr, privateKey);
+        System.out.println("param" + paramStr);
+        System.out.println("sign：" + signStr);
+        String encrypt = RSASignature.encrypt(paramStr, privateKey);
+        System.out.println("encrypt：" + encrypt);
+        System.out.println("-------decrypt-----------");
+        String decrypt = RSASignature.decrypt(encrypt, publicKey);
+        System.out.println("decrypt：" + decrypt);
+        System.out.println(RSASignature.doCheck(paramStr, signStr, publicKey));
     }
 }
