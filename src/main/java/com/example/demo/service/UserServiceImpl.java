@@ -50,4 +50,9 @@ public class UserServiceImpl implements UserService {
     public void save(User user) {
         userMapper.insert(user);
     }
+
+    @Override
+    public void update(User user) {
+        userMapper.updateByPrimaryKeySelective(user);
+    }
 }

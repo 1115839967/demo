@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.domain.Person;
 import com.example.demo.domain.User;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.JsonResult;
@@ -54,5 +55,24 @@ public class UserController {
             return new JsonResult(true, "查询结果为空");
         }
         return new JsonResult(true, "", userList);
+    }
+
+    @PostMapping("/saveList")
+    public JsonResult saveList(@RequestBody Person person) {
+        for (User user : person.getUserList()) {
+            System.out.println(user);
+        }
+
+        return new JsonResult(true, "");
+    }
+
+    @PostMapping("/update")
+    public JsonResult update(@RequestBody User user) {
+        String id = user.getId();
+        if (StringUtils.isBlank(id)) {
+            return new JsonResult(false, "id不能为空！");
+        }
+        userService.update(user);
+        return new JsonResult(true, "操作成功");
     }
 }

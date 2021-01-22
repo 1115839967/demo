@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.domain.Car;
 import com.example.demo.domain.User;
 import com.example.demo.utils.Remote;
 import com.example.demo.utils.encryption.RSASignature;
@@ -8,6 +9,7 @@ import com.jcraft.jsch.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import org.springframework.util.Assert;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -269,5 +271,47 @@ public class TestDemo {
         baos = (ByteArrayOutputStream) out;
         final ByteArrayInputStream swapStream = new ByteArrayInputStream(baos.toByteArray());
         return swapStream;
+    }
+
+    @Test
+    public void assertTest() {
+        String id = "";
+        Assert.hasText(id, "id can not be empty");
+    }
+
+    @Test
+    public void splitTest() {
+        String str = "001||003|004||||||";
+        str += "| ";
+        System.out.println(str);
+        String[] split = str.split("\\|");
+        System.out.println(split[0]);
+        System.out.println(split[1]);
+        System.out.println(split[2]);
+        System.out.println(split[3]);
+        String a = split[4];
+        String b = split[8];
+        System.out.println(a);
+        System.out.println("：" + b);
+    }
+
+    @Test
+    public void paseTest() {
+        Car car1 = new Car();
+        car1.setName("1");
+        car1.setNumber(1L);
+        Car car2 = new Car();
+        car2.setName("2");
+        car2.setNumber(2L);
+        Car car3 = new Car();
+        car3.setName("3");
+        car3.setNumber(0L);
+        List<Car> carList = new ArrayList<>();
+        carList.add(car1);
+        carList.add(car2);
+        carList.add(car3);
+
+        long sum = carList.stream().mapToLong(Car::getNumber).sum();
+        System.out.println(sum);
     }
 }

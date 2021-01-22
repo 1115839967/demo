@@ -23,7 +23,7 @@ public class ScheduleTask {
     private UserService userService;
 
     @Async
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 10000000)
     public void getAll() {
         List<User> userList = userService.findAll();
         for (User user : userList) {

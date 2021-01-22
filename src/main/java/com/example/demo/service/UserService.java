@@ -30,4 +30,9 @@ public interface UserService {
      * @param user
      */
     void save(User user);
+
+    /**
+     * 更新用户
+     */
+    void update(User user);
 }
