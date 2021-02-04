@@ -1,7 +1,11 @@
 package com.example.demo;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.extra.pinyin.PinyinUtil;
+import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.example.demo.domain.Car;
+import com.example.demo.domain.PersonType;
 import com.example.demo.domain.User;
 import com.example.demo.utils.Remote;
 import com.example.demo.utils.encryption.RSASignature;
@@ -313,5 +317,33 @@ public class TestDemo {
 
         long sum = carList.stream().mapToLong(Car::getNumber).sum();
         System.out.println(sum);
+    }
+
+    @Test
+    public void asList() {
+        User user = new User();
+        String str = user.getUserName();
+        List<String> list = Arrays.asList(str.split(","));
+        System.out.println(list);
+    }
+
+    @Test
+    public void enumTest() {
+        EnumSet<PersonType> personTypes = EnumSet.of(PersonType.STUDENT, PersonType.TEACHER);
+        System.out.println(personTypes.toString());
+        String s = personTypes.toString();
+        String[] split = s.split(",");
+        for (int i = 0; i < split.length; i++) {
+            System.out.println(split[i]);
+        }
+    }
+
+    @Test
+    public void huToolTest() {
+        //生成二维码
+        QrCodeUtil.generate("https://hutool.cn/", 300, 300, FileUtil.file("/Users/xutiancheng/Desktop/qrcode.jpg"));
+
+        String pinyin = PinyinUtil.getPinyin("你好", ",");
+        System.out.println(pinyin);
     }
 }

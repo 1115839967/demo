@@ -3,6 +3,7 @@ package com.example.demo.domain;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -11,5 +12,7 @@ import java.util.List;
  */
 @Data
 public class Person implements Serializable {
+    private EnumSet<PersonType> personTypes;
+
     private List<User> userList;
 }
